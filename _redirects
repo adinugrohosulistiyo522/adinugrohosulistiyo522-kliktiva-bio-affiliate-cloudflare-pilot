@@ -1,0 +1,2 @@
+# Kliktiva Cloudflare Worker: redirects intentionally disabled.
+# Route handling is implemented in src/index.js and wrangler.jsonc.

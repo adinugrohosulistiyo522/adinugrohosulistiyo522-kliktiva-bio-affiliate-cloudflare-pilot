@@ -1,30 +1,19 @@
-KLIKTIVA — CLOUDFLARE WORKER FIXED PILOT
+KLIKTIVA — CLOUDFLARE WORKER FIXED v3
 
-Status: prepared to address static route/redirect configuration. Live deployment must still be verified.
+Purpose:
+This revision specifically neutralizes stale _redirects files that may remain in a GitHub repository when new files are uploaded without deleting old files. It keeps the Worker-based route handling and static asset configuration.
 
-IMPORTANT: ZIP contents are at repository root. Upload/extract the files themselves to the ROOT of the existing GitHub repository, not as a nested folder and not as one ZIP file.
+IMPORTANT — apply once, carefully:
+1. Extract this ZIP.
+2. In the existing GitHub repository, upload the CONTENTS of this ZIP to the repository root (not the ZIP itself and not a nested folder).
+3. Allow GitHub to replace existing files. Ensure both `public/_redirects` and root `_redirects` are replaced by the included comment-only files. Do not leave the old redirect rules in the repository.
+4. Keep `wrangler.jsonc`, `src/index.js`, `package.json`, `public/index.html`, and `public/admin.html` at the shown paths.
+5. Wait for the newest Cloudflare build to finish and confirm the newest version is active in production before testing.
+6. The Cloudflare dashboard screenshot shows APPS_SCRIPT_URL already exists as a Production runtime variable. Do not change its value as part of this routing fix. Wrangler may show a configuration-sync warning because the variable is managed in the dashboard; that warning alone does not explain ERR_TOO_MANY_REDIRECTS.
 
-Expected root:
-- wrangler.jsonc
-- package.json
-- src/index.js
-- public/index.html
-- public/admin.html
-- Code.gs and License_Server.gs (source/reference for Apps Script setup)
+Worker route behavior:
+- `/` is served from public/index.html.
+- `/admin` and `/admin/` are served internally from public/admin.html; the Worker does not issue an HTTP redirect.
+- `/api` and `/api/*` are handled by the Worker and forwarded to Apps Script.
 
-Cloudflare Worker Build settings:
-- Root directory: /
-- Build command: None
-- Deploy command: npx wrangler deploy
-
-This is a Cloudflare Worker + Workers Static Assets project, not Cloudflare Pages. The config declares the Worker entry point and static assets. The Worker serves /admin internally from /admin.html without sending a redirect. The old Pages _redirects file is deliberately excluded. Static HTML handling is set to none to avoid automatic HTML URL redirects.
-
-After the GitHub upload/commit, wait for the newest Build to show Ready. Then in Deployments, ensure the version that corresponds to that new build receives 100% traffic / is active before testing. If the UI shows traffic split, do not assume Ready means it is serving production.
-
-Then configure Worker Settings > Variables and Secrets:
-Name: APPS_SCRIPT_URL
-Value: the deployed Google Apps Script Web App URL ending in /exec
-
-Do not put tokens/secrets in frontend files or GitHub. Do not change production DNS until / and /admin both work.
-
-Limitations: this package does not deploy Apps Script or create Google Sheets automatically. API actions are allowlisted in src/index.js and must be compared to the backend's current supported action list before production.
+This is still a pilot package. It has been syntax/configuration checked, but I cannot claim live Cloudflare recovery until the deployed version is verified. Do not change DNS or delete prior deployments during recovery.
